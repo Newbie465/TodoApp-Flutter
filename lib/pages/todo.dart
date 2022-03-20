@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../model/usermodel.dart';
+import 'login.dart';
 
 class todoList extends StatefulWidget {
   const todoList({ Key? key }) : super(key: key);
@@ -49,6 +50,7 @@ class _todoListState extends State<todoList> {
             print('Data not found');
           }
           setState(() {});
+          Fluttertoast.showToast(msg: 'To-do Loaded');
         });
 
       //todos.addAll(todosinit);
@@ -106,6 +108,12 @@ class _todoListState extends State<todoList> {
     
   }
 
+  Future<void> logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => loginScreen()));
+  }
+
   @override
   Widget build(BuildContext context) {
     
@@ -113,6 +121,19 @@ class _todoListState extends State<todoList> {
       backgroundColor: Color.fromARGB(255, 233, 233, 233),
       appBar: AppBar(
         title: Text('To-Do List'),
+        actions: <Widget>[
+          Padding(
+            padding: EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              onTap: () {
+                logout(context);
+              },
+              child: Icon(
+                Icons.exit_to_app,
+              ),
+            ),
+            )
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
