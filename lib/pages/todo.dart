@@ -40,10 +40,10 @@ class _todoListState extends State<todoList> {
     });
   } 
 
-  delete(item){
+  delete(item) async{
     DocumentReference documentReference = firebaseFirestore.collection('users').doc(user!.uid).collection('todos').doc(item);
 
-    documentReference.delete().whenComplete((){
+    await documentReference.delete().whenComplete((){
       print("$item deleted");
     });
   }
@@ -114,9 +114,7 @@ class _todoListState extends State<todoList> {
               itemBuilder: (BuildContext context, index) {
                 DocumentSnapshot documentSnapshot = snapshot.data.docs[index];
                 return Dismissible(
-                  onDismissed: (direction) {
-                    delete(documentSnapshot['todoTitle']);
-                  },
+                  direction: DismissDirection.none,
                   key: Key(index.toString()), 
                   child: Card(
                     elevation: 4,
