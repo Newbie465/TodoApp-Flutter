@@ -4,7 +4,6 @@ class userModel {
     String? email;
     String? firstName;
     String? secondName;
-    List? todos;
 
     userModel({this.uid, this.email, this.firstName, this.secondName, todos});
     
@@ -14,7 +13,6 @@ class userModel {
         email: map['email'],
         firstName: map['firstName'],
         secondName: map['secondName'],
-        todos: map['todos'],
 
       );
       
@@ -27,7 +25,6 @@ class userModel {
         'email': email,
         'firstName': firstName,
         'secondName': secondName,
-        'todos' : todos,
       };
 
     }

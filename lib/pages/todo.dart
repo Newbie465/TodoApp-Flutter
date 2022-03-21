@@ -22,90 +22,30 @@ class _todoListState extends State<todoList> {
 
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   User? user = FirebaseAuth.instance.currentUser;
-
-  userModel tododata = userModel();
-  List<dynamic> todos = [];
-  List<dynamic> todosinit = [];
-
-
-  //List todos = tododata.todos!; 
-  
-  
   
   @override
   void initState() {
     super.initState();
-    //todos.add("item1");
-    FirebaseFirestore.instance
-        .collection("users")
-        .doc(user!.uid)
-        .get()
-        .then((DocumentSnapshot documentSnapshot){
-          if(documentSnapshot.exists){
-            Map<String, dynamic> data = documentSnapshot.data()! as Map<String, dynamic>;
-            todos.addAll(data['todos']);
-            print(todos);
-          }
-          else{
-            print('Data not found');
-          }
-          setState(() {});
-          Fluttertoast.showToast(msg: 'To-do Loaded');
-        });
-
-      //todos.addAll(todosinit);
   }
+ 
+  create() {
+    DocumentReference documentReference = firebaseFirestore.collection('users').doc(user!.uid).collection('todos').doc(input);
 
-  
-  void firedata() {
-    firebaseFirestore
-      .collection('users')
-      .doc(user?.uid)
-      .get()
-      .then((DocumentSnapshot docs){
-        if (docs.exists) {
-          
-          Map<String, dynamic> data = docs.data()! as Map<String, dynamic>;
-          todos.addAll(data['todos']);
-        }else{
-          print('data not found');
-
-        }
-      });
-      
-  }
-
-
-  createToDos(String input) async {
+    Map<String, dynamic> todos = {
+      "todoTitle" : input
+    };
     
+    documentReference.set(todos).whenComplete((){
+      print("$input created");
+    });
+  } 
 
+  delete(item){
+    DocumentReference documentReference = firebaseFirestore.collection('users').doc(user!.uid).collection('todos').doc(item);
 
-    todos.add(input);
-    List<dynamic> addtodo  = ['$input'];
-    // tododata.todos = {'todoTitle':todos};
-
-    await firebaseFirestore
-        .collection('users')
-        .doc(user!.uid)
-        .update({'todos':FieldValue.arrayUnion(addtodo)});
-
-    Fluttertoast.showToast(msg: "To-Do Added");
-
-  }
-
-  removetodo(int index,String data) async {
-
-    todos.removeAt(index);
-    List<dynamic> subtodo  = ['$data'];
-
-    await firebaseFirestore
-      .collection('users')
-      .doc(user!.uid)
-      .update({'todos': FieldValue.arrayRemove(subtodo)});
-
-     Fluttertoast.showToast(msg: "To-Do Deleted");
-    // tododata.todos = {'todoTitle':todos};
-    
+    documentReference.delete().whenComplete((){
+      print("$item deleted");
+    });
   }
 
   Future<void> logout(BuildContext context) async {
@@ -153,10 +93,7 @@ class _todoListState extends State<todoList> {
                 actions: <Widget>[
                   FlatButton(
                     onPressed: () {
-                      createToDos(input);
-                      // setState(() {
-                      //   todos.add(input);
-                      // });
+                      create();
                       Navigator.of(context).pop();
                     }, 
                     child: Text("Add"))
@@ -169,41 +106,31 @@ class _todoListState extends State<todoList> {
         elevation: 7, 
       ),
       body:StreamBuilder(
-        stream: firebaseFirestore.collection('users').doc(user?.uid).snapshots(),
-        builder: (context, snapshots){
-          if(snapshots.hasData){
+        stream: firebaseFirestore.collection('users').doc(user!.uid).collection('todos').snapshots(),
+        builder: (context, AsyncSnapshot snapshot){
+          if(snapshot.hasData){
             return ListView.builder(
-              itemCount: todos.length,
+              itemCount: snapshot.data.docs.length,
               itemBuilder: (BuildContext context, index) {
+                DocumentSnapshot documentSnapshot = snapshot.data.docs[index];
                 return Dismissible(
                   onDismissed: (direction) {
-                    removetodo(index, todos[index]);
-                    //removetodo(index);
-                    //removetodo(index);
-                    // setState(() {
-                    //   todos.removeAt(index);
-                    // });
-                    //12
+                    delete(documentSnapshot['todoTitle']);
                   },
-                  key: Key(todos[index]), 
+                  key: Key(index.toString()), 
                   child: Card(
                     elevation: 4,
                     margin: EdgeInsets.fromLTRB(5, 5, 5, 5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8) ),
                     child: ListTile(
-                      title: Text(todos[index]),
+                      title: Text(documentSnapshot['todoTitle']),
                       trailing: IconButton(
                         icon: Icon(
                           Icons.delete,
                           color: Colors.red,),
                         onPressed: () {
-                          removetodo(index, todos[index]);
-                          // todos.removeAt(index);
-                          //removetodo(index);
-                          // setState(() {
-                          //   todos.removeAt(index);
-                          // });
+                          delete(documentSnapshot['todoTitle']);
                         },  
                         ),
                     ),));
