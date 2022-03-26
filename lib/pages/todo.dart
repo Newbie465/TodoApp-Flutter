@@ -152,7 +152,6 @@ class _todoListState extends State<todoList> {
                                       ),
                                       title: Text("Edit ToDo List"),
                                       content: TextField(
-                                        controller: TextEditingController()..text = documentSnapshot['todoTitle'],
                                         onChanged: (String value){
                                           update = value;
                                         },
