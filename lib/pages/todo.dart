@@ -19,6 +19,7 @@ class _todoListState extends State<todoList> {
 
   
   String input = '';
+  String update = '';
 
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   User? user = FirebaseAuth.instance.currentUser;
@@ -45,6 +46,16 @@ class _todoListState extends State<todoList> {
 
     await documentReference.delete().whenComplete((){
       print("$item deleted");
+    });
+  }
+
+  updatetodo(edit) {
+    DocumentReference documentReference1 = firebaseFirestore.collection('users').doc(user!.uid).collection('todos').doc(edit);
+    DocumentReference documentReference2 = firebaseFirestore.collection('users').doc(user!.uid).collection('todos').doc(update);
+
+    documentReference1.delete();
+    documentReference2.set({'todoTitle': update}).whenComplete((){
+      print("$edit updated");
     });
   }
 
@@ -123,15 +134,59 @@ class _todoListState extends State<todoList> {
                       borderRadius: BorderRadius.circular(8) ),
                     child: ListTile(
                       title: Text(documentSnapshot['todoTitle']),
-                      trailing: IconButton(
-                        icon: Icon(
-                          Icons.delete,
-                          color: Colors.red,),
-                        onPressed: () {
-                          delete(documentSnapshot['todoTitle']);
-                        },  
-                        ),
-                    ),));
+                      trailing: SizedBox(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.edit,
+                                ),
+                              onPressed: () {
+                                showDialog(
+                                  context: context, 
+                                  builder: (BuildContext context){
+                                    return AlertDialog(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8)
+                                      ),
+                                      title: Text("Edit ToDo List"),
+                                      content: TextField(
+                                        controller: TextEditingController()..text = documentSnapshot['todoTitle'],
+                                        onChanged: (String value){
+                                          update = value;
+                                        },
+                                      ),
+                                      actions: <Widget>[
+                                        FlatButton(
+                                          onPressed: () {
+                                            //create();
+                                            updatetodo(documentSnapshot['todoTitle']);
+                                            Navigator.of(context).pop();
+                                          }, 
+                                          child: Text("Edit"))
+                                      ],
+                                    );
+                                    
+                                  });
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete,
+                                color: Colors.red,),
+                                onPressed: () {
+                                  delete(documentSnapshot['todoTitle']);
+                                },
+                            ),
+                            
+                          ]
+                        )  
+                      ),
+                      
+                    ),
+                  )
+                );
             });
           }else {
               return Align(
